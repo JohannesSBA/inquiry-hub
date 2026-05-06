@@ -1,10 +1,12 @@
 /**
- * Shared Anthropic SDK instance for classification and follow-up generation.
+ * Shared OpenAI SDK instance for classification and follow-up generation.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { env } from "@/server/config/env";
 
-export const anthropic = new Anthropic({
-  apiKey: env.ANTHROPIC_API_KEY,
+export const openai = new OpenAI({
+  apiKey: env.OPENAI_API_KEY,
 });
+
+export const OPENAI_MODEL = env.OPENAI_MODEL ?? "gpt-5.2";

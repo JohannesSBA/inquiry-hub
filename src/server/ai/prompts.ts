@@ -1,5 +1,5 @@
 /**
- * System prompts for Claude — kept separate from API calls for clarity.
+ * System prompts for OpenAI — kept separate from API calls for clarity.
  */
 
 export const CLASSIFIER_SYSTEM_PROMPT = `You are an AI inquiry classifier for a tech startup called InquiryHub. Your job is to analyze incoming inquiries and produce structured classification data.

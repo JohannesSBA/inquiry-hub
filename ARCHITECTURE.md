@@ -11,7 +11,7 @@ Next.js 14 (App Router) application with a **thin route layer** (`src/app/api/**
 | Env validation | `src/server/config/env.ts` | Zod-parsed `process.env`; no `dotenv` import (Edge-safe middleware). |
 | Auth | `src/server/auth/*` | Neon Auth handler, session helpers, API guard, JWT (JWKS), team member resolution. |
 | Inquiries | `src/server/inquiries/*` | Repository, service (list/get/patch/process/inbound), reply sending orchestration. |
-| AI | `src/server/ai/*` | Anthropic client, prompts, classify + follow-up copy. |
+| AI | `src/server/ai/*` | OpenAI client, prompts, classify + follow-up copy. |
 | Gmail | `src/server/gmail/*` | OAuth client, state signing, token encryption, ingest/sync, send, `MailAccount` repository. |
 | Follow-ups | `src/server/followups/processDue.ts` | Due follow-up dispatch via Gmail; status + error fields. |
 | Realtime | `src/server/realtime/broadcaster.ts` | In-process `EventEmitter` for SSE subscribers. |
@@ -39,12 +39,12 @@ Migrations live under `prisma/migrations/`. Deploy with `npm run db:migrate:depl
 ## External dependencies
 
 - **Neon Auth** — session cookies + `/api/auth/[...all]` proxy; `AUTH_URL`, `JWKS_URL`, `NEON_AUTH_COOKIE_SECRET`.
-- **Anthropic** — classification and drafts.
+- **OpenAI** — classification and drafts through the Responses API.
 - **Google Gmail API** — OAuth, read sync, send.
 - **Vercel cron** — `vercel.json`: Gmail sync + follow-ups (Bearer `CRON_SECRET` in production).
 
 ## Security notes
 
-- Do not log or expose `DATABASE_URL`, `ANTHROPIC_API_KEY`, OAuth secrets, or token encryption keys.
+- Do not log or expose `DATABASE_URL`, `OPENAI_API_KEY`, OAuth secrets, or token encryption keys.
 - Rotate keys if `.env` was shared or committed.
 - Production must set a strong `NEON_AUTH_COOKIE_SECRET` (the app warns and uses a dev fallback if missing/short).

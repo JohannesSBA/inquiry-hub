@@ -1,11 +1,56 @@
 /**
- * Classifies an inquiry via Claude; returns structured AIClassification or safe fallback.
+ * Classifies an inquiry via OpenAI; returns structured AIClassification or safe fallback.
  */
 
-import type Anthropic from "@anthropic-ai/sdk";
 import type { AIClassification } from "@/types";
-import { anthropic } from "@/server/ai/client";
+import { OPENAI_MODEL, openai } from "@/server/ai/client";
 import { CLASSIFIER_SYSTEM_PROMPT } from "@/server/ai/prompts";
+
+const CLASSIFICATION_RESPONSE_FORMAT = {
+  type: "json_schema",
+  name: "inquiry_classification",
+  strict: true,
+  schema: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      category: {
+        type: "string",
+        enum: [
+          "partnership",
+          "sales",
+          "investment",
+          "support",
+          "talent",
+          "onboarding",
+          "spam",
+          "general",
+        ],
+      },
+      priority: { type: "string", enum: ["high", "medium", "low"] },
+      intent: { type: "string" },
+      sentiment: {
+        type: "string",
+        enum: ["positive", "neutral", "negative", "urgent"],
+      },
+      suggestedAssignment: {
+        type: "string",
+        enum: ["FOUNDER", "SALES", "SUPPORT", "ENGINEERING", "MARKETING"],
+      },
+      draftReply: { type: "string" },
+      followUpDays: { type: "number" },
+    },
+    required: [
+      "category",
+      "priority",
+      "intent",
+      "sentiment",
+      "suggestedAssignment",
+      "draftReply",
+      "followUpDays",
+    ],
+  },
+} as const;
 
 export async function classifyInquiry(
   subject: string,
@@ -14,28 +59,20 @@ export async function classifyInquiry(
   senderName: string,
 ): Promise<AIClassification> {
   try {
-    const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1024,
-      system: CLASSIFIER_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: `Classify this inquiry:
+    const response = await openai.responses.create({
+      model: OPENAI_MODEL,
+      instructions: CLASSIFIER_SYSTEM_PROMPT,
+      max_output_tokens: 1024,
+      text: { format: CLASSIFICATION_RESPONSE_FORMAT },
+      input: `Classify this inquiry:
 
 From: ${senderName}
 Channel: ${channel}
 Subject: ${subject}
 Body: ${body}`,
-        },
-      ],
     });
 
-    const text =
-      message.content
-        .filter((block): block is Anthropic.TextBlock => block.type === "text")
-        .map((block) => block.text)
-        .join("") || "";
+    const text = response.output_text || "";
 
     const cleaned = text.replace(/```json|```/g, "").trim();
     const result: AIClassification = JSON.parse(cleaned);

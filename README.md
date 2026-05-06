@@ -9,7 +9,7 @@ High-level flow (see **[ARCHITECTURE.md](./ARCHITECTURE.md)** for module layout 
 ```
 Ingestion Layer          AI Processing Layer       Action Layer
 ┌─────────────┐         ┌──────────────────┐      ┌─────────────┐
-│ Gmail API   │───┐     │ Claude API       │      │ Dashboard   │
+│ Gmail API   │───┐     │ OpenAI API       │      │ Dashboard   │
 │ Web Forms   │───┼────▶│ • Categorize     │─────▶│ Follow-ups  │
 │ Social DMs  │───┘     │ • Prioritize     │      │ Team Routing│
 └─────────────┘         │ • Draft replies  │      └─────────────┘
@@ -22,7 +22,7 @@ Ingestion Layer          AI Processing Layer       Action Layer
 - **Next.js 14** — App Router, API routes, middleware
 - **Prisma** — ORM with PostgreSQL
 - **Neon Auth** — Better Auth–compatible sessions, Google sign-in, same-origin `/api/auth` proxy
-- **Anthropic SDK** — Claude for classification + reply drafting
+- **OpenAI SDK** — Responses API for classification + reply drafting
 - **Gmail API** — Optional OAuth connect, polling ingest, outbound replies & follow-ups
 - **Recharts** — Analytics dashboards
 
@@ -44,15 +44,15 @@ cp .env.example .env
 
 Required variables (see `.env.example` for optional webhook/Gmail keys):
 
-| Variable | Purpose |
-|----------|---------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `ANTHROPIC_API_KEY` | Claude API |
-| `NEXT_PUBLIC_APP_URL` | App origin (no trailing slash) |
-| `AUTH_URL` | Neon Auth service URL |
-| `JWKS_URL` | Neon Auth JWKS URL |
-| `NEON_AUTH_COOKIE_SECRET` | **≥32 chars** — `openssl rand -base64 32` |
-| `CRON_SECRET` | Bearer token for cron routes in production |
+| Variable                  | Purpose                                    |
+| ------------------------- | ------------------------------------------ |
+| `DATABASE_URL`            | PostgreSQL connection string               |
+| `OPENAI_API_KEY`          | OpenAI API                                 |
+| `NEXT_PUBLIC_APP_URL`     | App origin (no trailing slash)             |
+| `AUTH_URL`                | Neon Auth service URL                      |
+| `JWKS_URL`                | Neon Auth JWKS URL                         |
+| `NEON_AUTH_COOKIE_SECRET` | **≥32 chars** — `openssl rand -base64 32`  |
+| `CRON_SECRET`             | Bearer token for cron routes in production |
 
 **Gmail:** set `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REDIRECT_URI` (must be `{NEXT_PUBLIC_APP_URL}/api/gmail/callback`), and `MAIL_TOKEN_ENCRYPTION_KEY` (base64 32-byte key).
 
@@ -73,24 +73,24 @@ npm run dev
 
 ## API Routes
 
-| Method | Route | Description |
-|--------|-------|-------------|
-| `*` | `/api/auth/[...all]` | Neon Auth proxy (same-origin cookies) |
-| `GET` | `/api/inquiries` | List inquiries + stats (authenticated) |
-| `POST` | `/api/inquiries/inbound` | Public ingestion (forms, adapters) |
-| `POST` | `/api/inquiries/process` | Classify single inquiry |
-| `POST` | `/api/inquiries/process-all` | Batch classify NEW inquiries |
-| `GET` | `/api/inquiries/[id]` | Inquiry detail |
-| `PATCH` | `/api/inquiries/[id]` | Update status, assignment, `aiDraft`, etc. |
-| `POST` | `/api/inquiries/[id]/reply` | Send edited draft via assignee Gmail |
-| `GET` | `/api/inquiries/stream` | SSE — live inquiry updates |
-| `POST` | `/api/inquiries/followups` | Cron: send due follow-ups (`Authorization: Bearer CRON_SECRET` in prod) |
-| `GET` | `/api/gmail/connect` | Start Gmail OAuth |
-| `GET` | `/api/gmail/callback` | OAuth redirect (**use this URI in Google Console**) |
-| `POST` | `/api/gmail/sync` | Cron: poll mailboxes |
-| `POST` | `/api/webhooks/telegram` | Telegram bot updates |
-| `GET`/`POST` | `/api/webhooks/whatsapp` | WhatsApp Cloud API |
-| `POST` | `/api/webhooks/instagram` | Instagram messaging (Meta) |
+| Method       | Route                        | Description                                                             |
+| ------------ | ---------------------------- | ----------------------------------------------------------------------- |
+| `*`          | `/api/auth/[...all]`         | Neon Auth proxy (same-origin cookies)                                   |
+| `GET`        | `/api/inquiries`             | List inquiries + stats (authenticated)                                  |
+| `POST`       | `/api/inquiries/inbound`     | Public ingestion (forms, adapters)                                      |
+| `POST`       | `/api/inquiries/process`     | Classify single inquiry                                                 |
+| `POST`       | `/api/inquiries/process-all` | Batch classify NEW inquiries                                            |
+| `GET`        | `/api/inquiries/[id]`        | Inquiry detail                                                          |
+| `PATCH`      | `/api/inquiries/[id]`        | Update status, assignment, `aiDraft`, etc.                              |
+| `POST`       | `/api/inquiries/[id]/reply`  | Send edited draft via assignee Gmail                                    |
+| `GET`        | `/api/inquiries/stream`      | SSE — live inquiry updates                                              |
+| `POST`       | `/api/inquiries/followups`   | Cron: send due follow-ups (`Authorization: Bearer CRON_SECRET` in prod) |
+| `GET`        | `/api/gmail/connect`         | Start Gmail OAuth                                                       |
+| `GET`        | `/api/gmail/callback`        | OAuth redirect (**use this URI in Google Console**)                     |
+| `POST`       | `/api/gmail/sync`            | Cron: poll mailboxes                                                    |
+| `POST`       | `/api/webhooks/telegram`     | Telegram bot updates                                                    |
+| `GET`/`POST` | `/api/webhooks/whatsapp`     | WhatsApp Cloud API                                                      |
+| `POST`       | `/api/webhooks/instagram`    | Instagram messaging (Meta)                                              |
 
 ### Submit an inquiry via API
 
@@ -108,9 +108,9 @@ curl -X POST http://localhost:3000/api/inquiries/inbound \
 
 ## UI
 
-- **`/sign-in`** — Google via Neon Auth  
-- **`/dashboard`** — Inquiry list, detail, draft edit, send reply, Gmail connect  
-- **`/analytics`** — Volume, categories, response times, follow-up conversion  
+- **`/sign-in`** — Google via Neon Auth
+- **`/dashboard`** — Inquiry list, detail, draft edit, send reply, Gmail connect
+- **`/analytics`** — Volume, categories, response times, follow-up conversion
 
 ## Data Model
 
@@ -118,7 +118,7 @@ curl -X POST http://localhost:3000/api/inquiries/inbound \
 **Inquiry** — Classification, drafts, Gmail thread linkage, `repliedAt`  
 **FollowUp** — Scheduled messages; failures record `lastError`  
 **TeamMember** — Internal routing; linked to Neon Auth user  
-**MailAccount** — Encrypted Gmail OAuth tokens per team member  
+**MailAccount** — Encrypted Gmail OAuth tokens per team member
 
 ### AI Classification Fields
 
@@ -132,18 +132,18 @@ Follow-ups are scheduled after classification (priority-based delays). The cron 
 
 This repo includes **`vercel.json`**:
 
-- `/api/gmail/sync` — every 5 minutes  
-- `/api/inquiries/followups` — daily 09:00 UTC  
+- `/api/gmail/sync` — every 5 minutes
+- `/api/inquiries/followups` — daily 09:00 UTC
 
 Self-hosted: call these paths with `Authorization: Bearer <CRON_SECRET>` (required when `NODE_ENV=production`).
 
 ## Production Deployment
 
-1. Provision PostgreSQL (Neon recommended).  
-2. Set all required env vars; **never** ship without `NEON_AUTH_COOKIE_SECRET`.  
-3. Run `npm run db:migrate:deploy`.  
-4. Configure Google OAuth redirect: `https://<your-domain>/api/gmail/callback`.  
-5. Deploy (e.g. `vercel`).  
+1. Provision PostgreSQL (Neon recommended).
+2. Set all required env vars; **never** ship without `NEON_AUTH_COOKIE_SECRET`.
+3. Run `npm run db:migrate:deploy`.
+4. Configure Google OAuth redirect: `https://<your-domain>/api/gmail/callback`.
+5. Deploy (e.g. `vercel`).
 
 ## Extending
 
@@ -153,4 +153,12 @@ Implement an adapter under `src/server/webhooks/` or POST to `/api/inquiries/inb
 
 ### Docs
 
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** — server layout, auth, Gmail, realtime, security notes  
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** — server layout, auth, Gmail, realtime, security notes
+
+## TODO
+
+What you should do locally
+Set a real NEON_AUTH_COOKIE_SECRET (≥32 chars, e.g. openssl rand -base64 32) so production isn’t on the dev fallback.
+In Google Cloud, set the OAuth redirect to {NEXT_PUBLIC_APP_URL}/api/gmail/callback (not under /api/auth/...).
+If .env was ever pasted into chat, rotate DB URL, OpenAI key, and any OAuth secrets.
+The InquiryHub roadmap from the handoff is implemented and documented; remaining work is mostly your environment config and manual smoke tests (sign-in, Gmail connect, sync, reply, SSE, webhooks).

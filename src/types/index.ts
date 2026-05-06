@@ -52,7 +52,7 @@ export interface TeamMemberDTO {
   role: TeamRole;
 }
 
-// AI classification result from Claude
+// AI classification result from OpenAI
 export interface AIClassification {
   category: Lowercase<Category>;
   priority: Lowercase<Priority>;

@@ -19,7 +19,9 @@ function resolveNeonAuthCookieSecret(): string {
 
 const schema = z.object({
   DATABASE_URL: z.string().min(1),
-  ANTHROPIC_API_KEY: z.string().min(1),
+  OPENAI_API_KEY: z.string().min(1),
+  /** Optional override for OpenAI Responses API model. */
+  OPENAI_MODEL: z.string().min(1).optional(),
   /** Neon Auth service base URL (from Neon dashboard). */
   AUTH_URL: z.string().url(),
   /** JWKS endpoint for optional JWT verification (e.g. bearer tokens). */
@@ -48,7 +50,8 @@ export type Env = z.infer<typeof schema>;
 function parseEnv(): Env {
   const parsed = schema.safeParse({
     DATABASE_URL: process.env.DATABASE_URL,
-    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    OPENAI_MODEL: process.env.OPENAI_MODEL,
     AUTH_URL: process.env.AUTH_URL,
     JWKS_URL: process.env.JWKS_URL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,

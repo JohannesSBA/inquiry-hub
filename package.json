@@ -18,7 +18,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.95.0",
     "@neondatabase/auth": "^0.3.0-beta",
     "@neondatabase/neon-js": "^0.5.0-beta",
     "@prisma/adapter-pg": "^7.8.0",
@@ -26,6 +25,7 @@
     "googleapis": "^171.4.0",
     "jose": "^6.2.3",
     "next": "^14.2.35",
+    "openai": "^6.36.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^3.8.1",

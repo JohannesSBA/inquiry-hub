@@ -11,11 +11,14 @@ const neonMw = neonAuth.middleware({ loginUrl: "/sign-in" });
 function isPublicPath(pathname: string) {
   if (pathname.startsWith("/_next")) return true;
   if (pathname.startsWith("/favicon")) return true;
+  if (pathname === "/") return true;
   if (pathname === "/sign-in") return true;
+  if (pathname === "/pricing") return true;
+  if (pathname === "/privacy-policy") return true;
+  if (pathname === "/terms-of-service") return true;
   if (pathname.startsWith("/api/auth")) return true;
-  if (pathname === "/api/inquiries/inbound") return true;
+  if (pathname.startsWith("/api/inquiries")) return true;
   if (pathname.startsWith("/api/webhooks")) return true;
-  if (pathname === "/api/inquiries/followups") return true;
   if (pathname === "/api/gmail/sync") return true;
   if (pathname === "/api/gmail/callback") return true;
   return false;

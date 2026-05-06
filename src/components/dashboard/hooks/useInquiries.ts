@@ -67,6 +67,10 @@ export function useInquiries(initialInquiries: DetailInquiry[]) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ inquiryId: id }),
       });
+      if (!res.ok) {
+        console.error("Process failed:", res.status, await res.text());
+        return;
+      }
       const data = await res.json();
       if (data.success && data.inquiry) {
         setInquiries((prev) =>
@@ -83,6 +87,10 @@ export function useInquiries(initialInquiries: DetailInquiry[]) {
     setProcessing(true);
     try {
       const res = await fetch("/api/inquiries/process-all", { method: "POST" });
+      if (!res.ok) {
+        console.error("Batch process failed:", res.status, await res.text());
+        return;
+      }
       const data = await res.json();
       if (data.success) await refreshList();
     } catch (err) {

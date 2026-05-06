@@ -1,5 +1,10 @@
-import { redirect } from "next/navigation";
+import { LandingPage } from "@/components/public/LandingPage";
+import { PublicLayout } from "@/components/public/PublicLayout";
 
 export default function Home() {
-  redirect("/dashboard");
+  return (
+    <PublicLayout>
+      <LandingPage />
+    </PublicLayout>
+  );
 }

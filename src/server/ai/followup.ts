@@ -2,8 +2,7 @@
  * Generates follow-up email body text for scheduled reminders.
  */
 
-import type Anthropic from "@anthropic-ai/sdk";
-import { anthropic } from "@/server/ai/client";
+import { OPENAI_MODEL, openai } from "@/server/ai/client";
 
 const FALLBACK =
   "Following up on our previous conversation. Would love to connect when you have a moment.\n\nBest,\nThe Team";
@@ -14,13 +13,10 @@ export async function generateFollowUp(
   attempt: number,
 ): Promise<string> {
   try {
-    const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 512,
-      messages: [
-        {
-          role: "user",
-          content: `Generate a follow-up email for an inquiry that hasn't received a response yet.
+    const response = await openai.responses.create({
+      model: OPENAI_MODEL,
+      max_output_tokens: 512,
+      input: `Generate a follow-up email for an inquiry that hasn't received a response yet.
 
 Original inquiry: ${originalBody}
 Category: ${category}
@@ -34,16 +30,9 @@ Write a brief, professional follow-up (2-3 sentences) that:
 - Attempt 3+: final nudge with clear call-to-action
 
 Respond with ONLY the email body text, no subject line or metadata. Sign off as "Best, The Team".`,
-        },
-      ],
     });
 
-    return (
-      message.content
-        .filter((block): block is Anthropic.TextBlock => block.type === "text")
-        .map((block) => block.text)
-        .join("") || FALLBACK
-    );
+    return response.output_text || FALLBACK;
   } catch {
     return FALLBACK;
   }

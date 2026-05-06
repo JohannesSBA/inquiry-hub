@@ -1,0 +1,522 @@
+.page {
+  min-height: 100vh;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 0.5px solid var(--border);
+  background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.brandMark {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  font-size: 15px;
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navLink,
+.navButton,
+.secondaryButton,
+.primaryButton {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s,
+    opacity 0.15s;
+}
+
+.navLink,
+.secondaryButton {
+  padding: 7px 13px;
+  color: var(--text-secondary);
+  border: 0.5px solid transparent;
+}
+
+.navLink:hover,
+.secondaryButton:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.navButton,
+.primaryButton {
+  padding: 8px 16px;
+  color: var(--accent-text);
+  background: var(--accent-bg);
+  border: 1px solid transparent;
+}
+
+.navButton:hover,
+.primaryButton:hover {
+  border-color: var(--accent);
+}
+
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 56px 24px 72px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+  gap: 40px;
+  align-items: center;
+  padding: 24px 0 48px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  margin-bottom: 14px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.heroTitle {
+  max-width: 680px;
+  font-size: 52px;
+  line-height: 1.02;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.heroText,
+.sectionText {
+  margin-top: 16px;
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.productPanel {
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.panelTop {
+  padding: 16px;
+  border-bottom: 0.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panelTitle {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.panelStatus {
+  font-size: 11px;
+  color: var(--success);
+  background: var(--success-bg);
+  border-radius: 999px;
+  padding: 4px 9px;
+  white-space: nowrap;
+}
+
+.inquiryPreview {
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.previewRow {
+  padding: 13px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+
+.previewMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
+
+.previewSubject {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.badgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.section {
+  padding: 44px 0;
+  border-top: 0.5px solid var(--border);
+}
+
+.sectionHeader {
+  max-width: 720px;
+  margin-bottom: 22px;
+}
+
+.sectionTitle {
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 650;
+}
+
+.featureGrid,
+.pricingGrid,
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.featureCard,
+.priceCard,
+.metricCard,
+.legalCard {
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+}
+
+.featureCard,
+.metricCard {
+  padding: 18px;
+}
+
+.featureLabel {
+  margin-bottom: 9px;
+  color: var(--accent-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.featureTitle {
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.featureText,
+.priceText,
+.legalText,
+.list {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.metricValue {
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.metricLabel {
+  margin-top: 4px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.workflow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.step {
+  padding: 16px;
+  border-left: 2px solid var(--accent);
+  background: var(--bg-primary);
+}
+
+.stepNumber {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.stepTitle {
+  margin-top: 7px;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.priceCard {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.highlightCard {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-bg);
+}
+
+.planName {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.price {
+  font-size: 34px;
+  font-weight: 750;
+}
+
+.price span {
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.list {
+  padding-left: 18px;
+}
+
+.list li {
+  margin-bottom: 8px;
+}
+
+.legalShell {
+  max-width: 860px;
+}
+
+.legalHero {
+  padding-bottom: 30px;
+}
+
+.legalTitle {
+  font-size: 40px;
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.legalCard {
+  padding: 22px;
+  margin-bottom: 14px;
+}
+
+.legalCard h2 {
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.legalCard p {
+  margin-bottom: 10px;
+}
+
+.footer {
+  border-top: 0.5px solid var(--border);
+  background: var(--bg-primary);
+}
+
+.footerInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.footerLinks a {
+  color: var(--text-secondary);
+}
+
+.signInShell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+}
+
+.signInMain {
+  flex: 1;
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 72px 24px;
+  display: flex;
+  align-items: center;
+}
+
+.signInCard {
+  width: 100%;
+  padding: 28px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+}
+
+.signInTitle {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.signInText {
+  margin: 10px 0 22px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.signInButton {
+  width: 100%;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: var(--radius-md);
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  border: 1px solid var(--accent);
+  font-weight: 650;
+}
+
+.googleLogo {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.termsNote {
+  margin-top: 16px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .featureGrid,
+  .pricingGrid,
+  .metricsGrid,
+  .workflow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .nav,
+  .footerInner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .links {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .main {
+    padding: 34px 16px 52px;
+  }
+
+  .heroTitle {
+    font-size: 38px;
+  }
+
+  .legalTitle {
+    font-size: 32px;
+  }
+
+  .featureGrid,
+  .pricingGrid,
+  .metricsGrid,
+  .workflow {
+    grid-template-columns: 1fr;
+  }
+
+  .heroActions,
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+  }
+
+  .productPanel {
+    border-radius: var(--radius-md);
+  }
+}
