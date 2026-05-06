@@ -2,6 +2,8 @@
  * GET /api/gmail/connect — starts OAuth flow for the signed-in team member.
  */
 
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { createOAuth2Client, GMAIL_SCOPES } from "@/server/gmail/oauthClient";
 import { signOAuthState } from "@/server/gmail/oauthState";

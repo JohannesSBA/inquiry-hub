@@ -4,6 +4,8 @@
 
 import { neonAuth } from "@/server/auth/neon";
 
+export const dynamic = "force-dynamic";
+
 const handler = neonAuth.handler();
 
 type Params = { all: string[] };

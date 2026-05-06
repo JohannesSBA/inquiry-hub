@@ -2,6 +2,8 @@
  * POST /api/inquiries/process — classify single inquiry.
  */
 
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { serviceProcessInquiry } from "@/server/inquiries/service";
 import {

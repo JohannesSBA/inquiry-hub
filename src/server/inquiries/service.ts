@@ -82,24 +82,25 @@ export async function servicePatchInquiry(
   id: string,
   body: Record<string, unknown>,
 ) {
-  const allowedFields = [
-    "status",
-    "category",
-    "priority",
-    "assignedToId",
-    "aiDraft",
-  ];
-  const data: Record<string, unknown> = {};
-  for (const field of allowedFields) {
-    if (body[field] !== undefined) data[field] = body[field];
+  const patch: Prisma.InquiryUpdateInput = {};
+
+  if (body.status !== undefined) patch.status = body.status as Prisma.InquiryUpdateInput["status"];
+  if (body.category !== undefined) patch.category = body.category as Prisma.InquiryUpdateInput["category"];
+  if (body.priority !== undefined) patch.priority = body.priority as Prisma.InquiryUpdateInput["priority"];
+  if (body.aiDraft !== undefined) patch.aiDraft = body.aiDraft as string | null;
+
+  if (body.assignedToId !== undefined) {
+    const aid = body.assignedToId as string | null;
+    patch.assignedTo = aid
+      ? { connect: { id: aid } }
+      : { disconnect: true };
   }
 
-  if (data.status === "REPLIED" || data.status === "CLOSED") {
+  if (patch.status === "REPLIED" || patch.status === "CLOSED") {
     await repoCancelPendingFollowUps(id);
   }
 
-  const patch = { ...data } as Prisma.InquiryUpdateInput;
-  if (data.status === "REPLIED") {
+  if (patch.status === "REPLIED") {
     patch.repliedAt = new Date();
   }
 
@@ -193,7 +194,9 @@ export async function serviceProcessInquiry(inquiryId: string) {
     aiDraft: classification.draftReply,
     status: "PROCESSING",
     processedAt: new Date(),
-    assignedToId: teamMember?.id ?? null,
+    assignedTo: teamMember?.id
+      ? { connect: { id: teamMember.id } }
+      : { disconnect: true },
   });
 
   const followUpDate = new Date();
@@ -245,7 +248,9 @@ export async function serviceProcessAllNew() {
         aiDraft: classification.draftReply,
         status: "PROCESSING",
         processedAt: new Date(),
-        assignedToId: teamMember?.id ?? null,
+        assignedTo: teamMember?.id
+          ? { connect: { id: teamMember.id } }
+          : { disconnect: true },
       });
 
       const followUpDate = new Date();

@@ -4,15 +4,16 @@
 
 "use client";
 
-import { createAuthClient, BetterAuthVanillaAdapter } from "@neondatabase/auth";
+import { createAuthClient, type VanillaBetterAuthClient } from "@neondatabase/auth";
+import { BetterAuthVanillaAdapter } from "@neondatabase/auth/vanilla/adapters";
 
-let cached: ReturnType<typeof createAuthClient> | null = null;
+let cached: VanillaBetterAuthClient | null = null;
 
-export function getAuthBrowserClient() {
+export function getAuthBrowserClient(): VanillaBetterAuthClient {
   if (cached) return cached;
   const base = process.env.NEXT_PUBLIC_APP_URL!.replace(/\/$/, "");
   cached = createAuthClient(`${base}/api/auth`, {
     adapter: BetterAuthVanillaAdapter(),
-  });
+  }) as VanillaBetterAuthClient;
   return cached;
 }

@@ -150,7 +150,7 @@ export function DetailPanel({
           draft={inquiry.aiDraft}
           processing={processing}
           onSaveDraft={onSaveDraft}
-          onSendReply={onSendReply}
+          onSend={onSendReply}
         />
       )}
 

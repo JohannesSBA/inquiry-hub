@@ -2,6 +2,8 @@
  * POST /api/inquiries/inbound — public ingestion for forms + adapters.
  */
 
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import type { InboundInquiry } from "@/types";
 import { serviceCreateInbound } from "@/server/inquiries/service";

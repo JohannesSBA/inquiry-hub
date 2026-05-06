@@ -2,6 +2,8 @@
  * POST /api/inquiries/[id]/reply — send draft via assignee Gmail.
  */
 
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { sendAssigneeReply } from "@/server/inquiries/reply";
 import {

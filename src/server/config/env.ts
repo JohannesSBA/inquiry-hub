@@ -1,10 +1,21 @@
 /**
  * Single source of truth for validated environment variables.
  * Import `env` from here instead of reading process.env ad hoc.
+ *
+ * Note: no `dotenv/config` here — Next.js loads `.env*`; keeps middleware Edge-safe.
  */
 
-import "dotenv/config";
 import { z } from "zod";
+
+/** Neon Auth cookie signing — must be 32+ random chars in real deployments. */
+function resolveNeonAuthCookieSecret(): string {
+  const raw = process.env.NEON_AUTH_COOKIE_SECRET?.trim();
+  if (raw && raw.length >= 32) return raw;
+  console.warn(
+    "[env] NEON_AUTH_COOKIE_SECRET missing or too short — using insecure fallback. Generate: openssl rand -base64 32",
+  );
+  return "development-only-neon-auth-cookie-secret-32ch!";
+}
 
 const schema = z.object({
   DATABASE_URL: z.string().min(1),
@@ -41,7 +52,7 @@ function parseEnv(): Env {
     AUTH_URL: process.env.AUTH_URL,
     JWKS_URL: process.env.JWKS_URL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    NEON_AUTH_COOKIE_SECRET: process.env.NEON_AUTH_COOKIE_SECRET,
+    NEON_AUTH_COOKIE_SECRET: resolveNeonAuthCookieSecret(),
     AUTH_ALLOWED_EMAIL_DOMAINS: process.env.AUTH_ALLOWED_EMAIL_DOMAINS,
     CRON_SECRET: process.env.CRON_SECRET,
     NODE_ENV: process.env.NODE_ENV as Env["NODE_ENV"],

@@ -2,6 +2,8 @@
  * POST /api/gmail/sync — cron: poll all connected mailboxes (CRON_SECRET in prod).
  */
 
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/server/config/env";
 import { repoMailAccountListAll, repoMailAccountUpdate } from "@/server/gmail/repository";

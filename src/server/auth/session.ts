@@ -2,7 +2,6 @@
  * Server-side session helpers for pages and route handlers.
  */
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { env } from "@/server/config/env";
 import { neonAuth } from "@/server/auth/neon";
@@ -21,8 +20,8 @@ function allowedEmailDomain(email: string): boolean {
 }
 
 export async function getSession() {
-  const h = await headers();
-  return neonAuth.getSession({ headers: h });
+  /** Uses Next.js request context from better-auth / Neon Auth integration. */
+  return neonAuth.getSession();
 }
 
 export async function requireUser(): Promise<AuthUserLike> {

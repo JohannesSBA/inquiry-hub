@@ -86,7 +86,7 @@ async function warnIfPendingMigrations(client: PrismaClient) {
       ) {
         globalForPrisma.medaPrismaMigrationWarningShown = true;
         console.warn(
-          `[prisma] Pending database migrations detected. Run "npm run prisma:migrate:deploy" before relying on new schema paths. Missing: ${pendingMigrations.join(", ")}`,
+          `[prisma] Pending database migrations detected. Run "npm run db:migrate:deploy" before relying on new schema paths. Missing: ${pendingMigrations.join(", ")}`,
         );
       }
     } catch {

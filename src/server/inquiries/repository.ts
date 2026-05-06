@@ -45,9 +45,8 @@ export async function repoListForApi(params: {
       contact: true,
       assignedTo: true,
       followUps: {
-        where: { status: "PENDING" },
-        orderBy: { scheduledAt: "asc" },
-        take: 1,
+        orderBy: { scheduledAt: "desc" },
+        take: 3,
       },
     },
     orderBy: [{ priority: "asc" }, { receivedAt: "desc" }],

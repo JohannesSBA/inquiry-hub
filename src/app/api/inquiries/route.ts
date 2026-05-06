@@ -2,6 +2,8 @@
  * GET /api/inquiries — list + aggregate stats (authenticated).
  */
 
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { serviceListInquiriesApi } from "@/server/inquiries/service";
 import {

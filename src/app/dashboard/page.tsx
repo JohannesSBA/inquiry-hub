@@ -1,39 +1,17 @@
-import { prisma } from "@/lib/prisma";
+import { requireTeamMember } from "@/server/auth/session";
+import { repoListDashboardTake } from "@/server/inquiries/repository";
 import { DashboardClient } from "@/components/DashboardClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [inquiries, teamMembers, stats] = await Promise.all([
-    prisma.inquiry.findMany({
-      include: {
-        contact: true,
-        assignedTo: true,
-        followUps: {
-          orderBy: { scheduledAt: "desc" },
-          take: 3,
-        },
-      },
-      orderBy: [{ receivedAt: "desc" }],
-      take: 50,
-    }),
-    prisma.teamMember.findMany(),
-    Promise.all([
-      prisma.inquiry.count(),
-      prisma.inquiry.count({ where: { status: "NEW" } }),
-      prisma.inquiry.count({ where: { priority: "HIGH" } }),
-      prisma.inquiry.count({ where: { status: "REPLIED" } }),
-      prisma.inquiry.count({ where: { category: null } }),
-    ]),
-  ]);
+  await requireTeamMember();
 
-  const [total, newCount, highPriority, replied, unprocessed] = stats;
+  const inquiries = await repoListDashboardTake(50);
 
   return (
     <DashboardClient
       initialInquiries={JSON.parse(JSON.stringify(inquiries))}
-      teamMembers={JSON.parse(JSON.stringify(teamMembers))}
-      stats={{ total, new: newCount, highPriority, replied, unprocessed }}
     />
   );
 }

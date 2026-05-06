@@ -2,6 +2,8 @@
  * POST /api/inquiries/process-all — batch classify NEW inquiries.
  */
 
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { serviceProcessAllNew } from "@/server/inquiries/service";
 import {

@@ -2,6 +2,8 @@
  * GET /api/gmail/callback — OAuth redirect target; stores encrypted tokens.
  */
 
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
 import { createOAuth2Client } from "@/server/gmail/oauthClient";

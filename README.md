@@ -4,6 +4,8 @@ A lightweight system that automatically organizes, classifies, and follows up wi
 
 ## Architecture
 
+High-level flow (see **[ARCHITECTURE.md](./ARCHITECTURE.md)** for module layout and data flow):
+
 ```
 Ingestion Layer          AI Processing Layer       Action Layer
 ┌─────────────┐         ┌──────────────────┐      ┌─────────────┐
@@ -17,10 +19,12 @@ Ingestion Layer          AI Processing Layer       Action Layer
 
 ## Tech Stack
 
-- **Next.js 14** — App Router, API routes, server components
+- **Next.js 14** — App Router, API routes, middleware
 - **Prisma** — ORM with PostgreSQL
-- **Anthropic SDK** — Claude for AI classification + reply drafting
-- **Gmail API** — Email ingestion (optional)
+- **Neon Auth** — Better Auth–compatible sessions, Google sign-in, same-origin `/api/auth` proxy
+- **Anthropic SDK** — Claude for classification + reply drafting
+- **Gmail API** — Optional OAuth connect, polling ingest, outbound replies & follow-ups
+- **Recharts** — Analytics dashboards
 
 ## Quick Start
 
@@ -32,39 +36,61 @@ cd inquiry-hub
 npm install
 ```
 
-### 2. Set up environment
+### 2. Environment
 
 ```bash
 cp .env.example .env
-# Edit .env with your database URL and Anthropic API key
 ```
 
-### 3. Set up database
+Required variables (see `.env.example` for optional webhook/Gmail keys):
+
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `ANTHROPIC_API_KEY` | Claude API |
+| `NEXT_PUBLIC_APP_URL` | App origin (no trailing slash) |
+| `AUTH_URL` | Neon Auth service URL |
+| `JWKS_URL` | Neon Auth JWKS URL |
+| `NEON_AUTH_COOKIE_SECRET` | **≥32 chars** — `openssl rand -base64 32` |
+| `CRON_SECRET` | Bearer token for cron routes in production |
+
+**Gmail:** set `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REDIRECT_URI` (must be `{NEXT_PUBLIC_APP_URL}/api/gmail/callback`), and `MAIL_TOKEN_ENCRYPTION_KEY` (base64 32-byte key).
+
+### 3. Database
 
 ```bash
-npx prisma generate
-npx prisma db push
-npm run db:seed     # Load demo data
+npm run db:generate
+npm run db:migrate:dev   # or db:migrate:deploy in CI/production
+npm run db:seed          # optional demo data
 ```
 
 ### 4. Run
 
 ```bash
 npm run dev
-# Open http://localhost:3000
+# Open http://localhost:3000 — sign in at /sign-in
 ```
 
 ## API Routes
 
 | Method | Route | Description |
 |--------|-------|-------------|
-| `GET` | `/api/inquiries` | List inquiries with filters |
-| `POST` | `/api/inquiries/inbound` | Accept new inquiry from any channel |
-| `POST` | `/api/inquiries/process` | Classify single inquiry with AI |
-| `POST` | `/api/inquiries/process-all` | Batch classify all new inquiries |
-| `GET` | `/api/inquiries/[id]` | Get single inquiry with details |
-| `PATCH` | `/api/inquiries/[id]` | Update inquiry status/assignment |
-| `POST` | `/api/inquiries/followups` | Process due follow-ups (cron) |
+| `*` | `/api/auth/[...all]` | Neon Auth proxy (same-origin cookies) |
+| `GET` | `/api/inquiries` | List inquiries + stats (authenticated) |
+| `POST` | `/api/inquiries/inbound` | Public ingestion (forms, adapters) |
+| `POST` | `/api/inquiries/process` | Classify single inquiry |
+| `POST` | `/api/inquiries/process-all` | Batch classify NEW inquiries |
+| `GET` | `/api/inquiries/[id]` | Inquiry detail |
+| `PATCH` | `/api/inquiries/[id]` | Update status, assignment, `aiDraft`, etc. |
+| `POST` | `/api/inquiries/[id]/reply` | Send edited draft via assignee Gmail |
+| `GET` | `/api/inquiries/stream` | SSE — live inquiry updates |
+| `POST` | `/api/inquiries/followups` | Cron: send due follow-ups (`Authorization: Bearer CRON_SECRET` in prod) |
+| `GET` | `/api/gmail/connect` | Start Gmail OAuth |
+| `GET` | `/api/gmail/callback` | OAuth redirect (**use this URI in Google Console**) |
+| `POST` | `/api/gmail/sync` | Cron: poll mailboxes |
+| `POST` | `/api/webhooks/telegram` | Telegram bot updates |
+| `GET`/`POST` | `/api/webhooks/whatsapp` | WhatsApp Cloud API |
+| `POST` | `/api/webhooks/instagram` | Instagram messaging (Meta) |
 
 ### Submit an inquiry via API
 
@@ -80,63 +106,51 @@ curl -X POST http://localhost:3000/api/inquiries/inbound \
   }'
 ```
 
+## UI
+
+- **`/sign-in`** — Google via Neon Auth  
+- **`/dashboard`** — Inquiry list, detail, draft edit, send reply, Gmail connect  
+- **`/analytics`** — Volume, categories, response times, follow-up conversion  
+
 ## Data Model
 
-**Contact** — People who send inquiries (auto-created/updated on inbound)
-**Inquiry** — The inquiry itself, with AI-generated classification
-**FollowUp** — Scheduled follow-up messages with escalating urgency
-**TeamMember** — Internal team for routing assignments
+**Contact** — People who send inquiries (auto-created/updated on inbound)  
+**Inquiry** — Classification, drafts, Gmail thread linkage, `repliedAt`  
+**FollowUp** — Scheduled messages; failures record `lastError`  
+**TeamMember** — Internal routing; linked to Neon Auth user  
+**MailAccount** — Encrypted Gmail OAuth tokens per team member  
 
 ### AI Classification Fields
 
-Each processed inquiry gets:
-- **Category** — partnership, sales, investment, support, talent, onboarding, spam, general
-- **Priority** — high, medium, low
-- **Intent** — concise summary of what the sender wants
-- **Sentiment** — positive, neutral, negative, urgent
-- **Draft Reply** — ready-to-send response
-- **Team Assignment** — auto-routed to the right person
+Each processed inquiry gets category, priority, intent, sentiment, draft reply, and suggested assignee.
 
 ## Follow-up System
 
-Follow-ups are scheduled automatically after classification:
-- High priority: 1-day follow-up
-- Medium priority: 3-day follow-up
-- Low priority: 7-day follow-up
+Follow-ups are scheduled after classification (priority-based delays). The cron endpoint sends via the assignee’s connected Gmail when configured.
 
-Each inquiry gets up to 3 follow-up attempts with escalating urgency.
+### Vercel cron
 
-### Setting up the cron job
+This repo includes **`vercel.json`**:
 
-For Vercel, add to `vercel.json`:
+- `/api/gmail/sync` — every 5 minutes  
+- `/api/inquiries/followups` — daily 09:00 UTC  
 
-```json
-{
-  "crons": [{
-    "path": "/api/inquiries/followups",
-    "schedule": "0 9 * * *"
-  }]
-}
-```
-
-For self-hosted, use a cron service to POST to `/api/inquiries/followups` with the `CRON_SECRET` header.
+Self-hosted: call these paths with `Authorization: Bearer <CRON_SECRET>` (required when `NODE_ENV=production`).
 
 ## Production Deployment
 
-1. Set up a PostgreSQL database (Supabase, Railway, Neon, etc.)
-2. Add your `ANTHROPIC_API_KEY` to environment variables
-3. Run `prisma db push` against your production database
-4. Deploy to Vercel: `npx vercel`
+1. Provision PostgreSQL (Neon recommended).  
+2. Set all required env vars; **never** ship without `NEON_AUTH_COOKIE_SECRET`.  
+3. Run `npm run db:migrate:deploy`.  
+4. Configure Google OAuth redirect: `https://<your-domain>/api/gmail/callback`.  
+5. Deploy (e.g. `vercel`).  
 
 ## Extending
 
-### Add Gmail integration
+### New channels
 
-1. Set up Google Cloud project with Gmail API enabled
-2. Create OAuth2 credentials
-3. Add credentials to `.env`
-4. Implement a Gmail webhook listener in `/api/webhooks/gmail`
+Implement an adapter under `src/server/webhooks/` or POST to `/api/inquiries/inbound` — inbound schema normalizes channels into one pipeline.
 
-### Add new channels
+### Docs
 
-POST to `/api/inquiries/inbound` from any source — the schema normalizes all channels into the same format.
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** — server layout, auth, Gmail, realtime, security notes  

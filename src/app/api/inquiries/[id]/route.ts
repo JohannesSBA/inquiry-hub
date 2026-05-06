@@ -2,6 +2,8 @@
  * GET/PATCH /api/inquiries/[id]
  */
 
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import {
   serviceGetInquiry,

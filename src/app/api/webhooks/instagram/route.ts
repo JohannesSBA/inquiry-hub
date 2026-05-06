@@ -2,6 +2,8 @@
  * Instagram messaging webhooks (Meta) — same HMAC verification as WhatsApp.
  */
 
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { dispatchInbound } from "@/server/webhooks/service";
 import {

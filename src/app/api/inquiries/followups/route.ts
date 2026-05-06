@@ -2,6 +2,8 @@
  * POST /api/inquiries/followups — cron: send due follow-ups via Gmail.
  */
 
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/server/config/env";
 import { processDueFollowUps } from "@/server/followups/processDue";
