@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Contacts ───────────────────────────────────────────────
+model Contact {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  phone     String?
+  company   String?
+  channel   Channel   @default(EMAIL)
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  inquiries Inquiry[]
+}
+
+// ─── Inquiries ──────────────────────────────────────────────
+model Inquiry {
+  id         String         @id @default(cuid())
+  subject    String
+  body       String
+  channel    Channel
+  status     InquiryStatus  @default(NEW)
+  category   Category?
+  priority   Priority?
+  intent     String?
+  sentiment  Sentiment?
+  aiDraft    String?
+  receivedAt DateTime       @default(now())
+  processedAt DateTime?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  externalMessageId String? @unique
+  gmailThreadId     String?
+  repliedAt         DateTime?
+  inReplyToHeader   String?
+
+  contactId  String
+  contact    Contact        @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  assignedToId String?
+  assignedTo   TeamMember?  @relation(fields: [assignedToId], references: [id])
+
+  followUps  FollowUp[]
+
+  @@index([status])
+  @@index([category])
+  @@index([priority])
+  @@index([contactId])
+}
+
+// ─── Follow-ups ─────────────────────────────────────────────
+model FollowUp {
+  id          String       @id @default(cuid())
+  message     String
+  scheduledAt DateTime
+  sentAt      DateTime?
+  status      FollowUpStatus @default(PENDING)
+  attempt     Int          @default(1)
+  lastError   String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  inquiryId   String
+  inquiry     Inquiry      @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+
+  @@index([status, scheduledAt])
+}
+
+// ─── Team members ───────────────────────────────────────────
+model TeamMember {
+  id         String    @id @default(cuid())
+  authUserId String?   @unique
+  name       String
+  email      String    @unique
+  role       TeamRole
+  createdAt  DateTime  @default(now())
+
+  inquiries   Inquiry[]
+  mailAccount MailAccount?
+}
+
+model MailAccount {
+  id            String     @id @default(cuid())
+  teamMemberId  String     @unique
+  teamMember    TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  email         String
+  /** AES-GCM ciphertext for JSON { accessToken, refreshToken }. */
+  tokensCipher  String
+  tokensIv      String
+  scope         String?
+  historyId     String?
+  lastSyncedAt  DateTime?
+  lastError     String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+// ─── Enums ──────────────────────────────────────────────────
+enum Channel {
+  EMAIL
+  FORM
+  SOCIAL
+  API
+}
+
+enum InquiryStatus {
+  NEW
+  PROCESSING
+  AWAITING_REPLY
+  REPLIED
+  FOLLOW_UP
+  CLOSED
+}
+
+enum Category {
+  PARTNERSHIP
+  SALES
+  INVESTMENT
+  SUPPORT
+  TALENT
+  ONBOARDING
+  SPAM
+  GENERAL
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+  URGENT
+}
+
+enum FollowUpStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+enum TeamRole {
+  FOUNDER
+  SALES
+  SUPPORT
+  ENGINEERING
+  MARKETING
+}
